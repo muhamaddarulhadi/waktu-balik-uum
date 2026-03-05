@@ -1,6 +1,6 @@
 {
-  "name": "Waktu Balik",
-  "short_name": "Waktu Balik",
+  "name": "Waktu Balik UUM",
+  "short_name": "Waktu Balik UUM",
   "description": "Kira masa pulang kerja",
   "start_url": "./index.html",
   "display": "standalone",
