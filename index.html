@@ -871,6 +871,9 @@ function calculate(){
   btn.querySelector('span:last-child').textContent='›';
   btn.querySelector('.left').innerHTML='🔔 <span>Tetapkan Peringatan Pulang</span>';
   btn.style.borderColor=''; btn.style.color='';
+  // Clear any existing reminder poll
+  if(reminderPollInterval) clearInterval(reminderPollInterval);
+  reminderTargetTime = null; reminderFired = false;
   const isRamadan=document.getElementById('ramadan').checked;
   const isThursday=document.getElementById('thursday').checked;
 
@@ -947,36 +950,53 @@ function updateCountdown(){
   statusText.innerText='Masih waktu bekerja';
 }
 
+// ── Notification core ─────────────────────────────
 function notify(){
+  if(Notification.permission !== 'granted') return;
+
   const title = '🎉 Waktu Balik!';
-  const options = {
+  const opts = {
     body: 'Dah boleh balik sekarang. Jangan lupa punch out!',
     icon: 'icon-192.png',
     badge: 'icon-192.png',
-    tag: 'waktu-balik',          // replaces previous notif instead of stacking
+    tag: 'waktu-balik',
     renotify: true,
-    requireInteraction: true,    // stays on screen until dismissed
+    requireInteraction: true,
     vibrate: [200, 100, 200, 100, 400],
     actions: [
-      { action: 'open', title: '📲 Buka App' },
+      { action: 'open',    title: '📲 Buka App' },
       { action: 'dismiss', title: '✕ Tutup' }
     ],
     data: { url: './index.html' }
   };
 
-  if(Notification.permission !== 'granted') return;
+  // Try SW notification first (works on phone + desktop PWA)
+  navigator.serviceWorker?.getRegistration()
+    .then(reg => {
+      if(reg && reg.active) reg.showNotification(title, opts);
+      else new Notification(title, { body: opts.body, icon: opts.icon });
+    })
+    .catch(() => new Notification(title, { body: opts.body, icon: opts.icon }));
+}
 
-  // Try via service worker first (works on phone + Windows when app is closed)
-  navigator.serviceWorker?.getRegistration().then(reg => {
-    if(reg){
-      reg.showNotification(title, options);
-    } else {
-      // Fallback: basic browser notification
-      new Notification(title, { body: options.body, icon: options.icon });
+// ── Reminder: page-side polling (reliable on desktop) ──
+let reminderTargetTime = null;  // timestamp ms
+let reminderFired = false;
+let reminderPollInterval = null;
+
+function startReminderPoll(){
+  if(reminderPollInterval) clearInterval(reminderPollInterval);
+  reminderFired = false;
+
+  // Check every second from the page — this works even when SW is suspended
+  reminderPollInterval = setInterval(() => {
+    if(reminderFired) return;
+    if(reminderTargetTime && Date.now() >= reminderTargetTime){
+      reminderFired = true;
+      clearInterval(reminderPollInterval);
+      notify();
     }
-  }).catch(() => {
-    new Notification(title, { body: options.body, icon: options.icon });
-  });
+  }, 1000);
 }
 
 function setReminder(){
@@ -992,48 +1012,38 @@ function setReminder(){
     btn.style.borderColor = 'var(--accent-border)';
     btn.style.color = 'var(--accent)';
 
+    // Calculate exact target timestamp
     const now = new Date();
-    let target = new Date();
+    const target = new Date();
     target.setHours(Math.floor(targetSecondsToday / 3600) % 24);
     target.setMinutes(Math.floor((targetSecondsToday % 3600) / 60));
     target.setSeconds(Math.floor(targetSecondsToday % 60));
-    if(target < now) target.setDate(target.getDate() + 1);
+    target.setMilliseconds(0);
+    if(target <= now) target.setDate(target.getDate() + 1);
 
-    const msLeft = target - now;
+    reminderTargetTime = target.getTime();
 
-    // Send a "reminder set" confirmation notification immediately
-    navigator.serviceWorker?.getRegistration().then(reg => {
-      const pulangTime = document.getElementById('outTime').innerText;
-      const confirmOptions = {
-        body: `Peringatan ditetapkan untuk pukul ${pulangTime} ⏰`,
-        icon: 'icon-192.png',
-        badge: 'icon-192.png',
-        tag: 'waktu-balik-set',
-        silent: true,
-        data: { url: './index.html' }
-      };
-      if(reg) reg.showNotification('Waktu Balik — Peringatan Aktif', confirmOptions);
-      else new Notification('Waktu Balik — Peringatan Aktif', confirmOptions);
-    }).catch(() => {});
+    // Start page-side polling (most reliable across all platforms)
+    startReminderPoll();
 
-    // Schedule the actual alarm
-    setTimeout(() => { notify(); }, msLeft);
-
-    // Also tell SW to schedule (so it fires even if tab is in background)
+    // Also tell SW to schedule as backup (for phone background)
     navigator.serviceWorker?.getRegistration().then(reg => {
       if(reg && reg.active){
         reg.active.postMessage({
           type: 'SCHEDULE_NOTIFY',
-          delay: msLeft,
+          delay: reminderTargetTime - Date.now(),
           title: '🎉 Waktu Balik!',
           body: 'Dah boleh balik sekarang. Jangan lupa punch out!'
         });
       }
     });
+
+    // Confirmation toast
+    const pulangTime = document.getElementById('outTime').innerText;
+    showToast(`⏰ Peringatan ditetapkan — ${pulangTime}`);
   });
 }
 
-// Toast helper
 function showToast(msg){
   let t = document.getElementById('toast');
   if(!t){
@@ -1045,14 +1055,14 @@ function showToast(msg){
       color:#f0f4f8; padding:10px 18px; border-radius:20px;
       font-size:13px; font-weight:500; z-index:9999;
       box-shadow:0 4px 20px rgba(0,0,0,0.4);
-      transition: opacity 0.4s;
+      opacity:0; transition:opacity 0.3s; white-space:nowrap;
     `;
     document.body.appendChild(t);
   }
   t.innerText = msg;
   t.style.opacity = '1';
   clearTimeout(t._hide);
-  t._hide = setTimeout(() => { t.style.opacity = '0'; }, 3000);
+  t._hide = setTimeout(() => { t.style.opacity = '0'; }, 3500);
 }
 
 updateDisplay();
