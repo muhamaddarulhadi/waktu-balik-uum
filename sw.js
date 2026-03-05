@@ -1,6 +1,6 @@
 const CACHE_NAME = 'waktu-balik-v1';
 const ASSETS = [
-  './WaktuBalikUUMV4.html',
+  './index.html',
   './manifest.json',
   'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap'
 ];
@@ -36,12 +36,12 @@ self.addEventListener('fetch', e => {
         }
         return res;
       });
-    }).catch(() => caches.match('./WaktuBalikUUMV4.html'))
+    }).catch(() => caches.match('./index.html'))
   );
 });
 
 // Push notifications
 self.addEventListener('notificationclick', e => {
   e.notification.close();
-  e.waitUntil(clients.openWindow('./WaktuBalikUUMV4.html'));
+  e.waitUntil(clients.openWindow('./index.html'));
 });
