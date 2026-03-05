@@ -948,33 +948,111 @@ function updateCountdown(){
 }
 
 function notify(){
-  if(Notification.permission==='granted'){
-    navigator.serviceWorker?.getRegistration().then(reg=>{
-      if(reg) reg.showNotification('Waktu Balik!',{body:'Dah boleh balik 🎉',icon:'icon-192.png'});
-      else new Notification('Waktu Balik!',{body:'Dah boleh balik 🎉'});
-    }).catch(()=>new Notification('Waktu Balik!',{body:'Dah boleh balik 🎉'}));
-  }
+  const title = '🎉 Waktu Balik!';
+  const options = {
+    body: 'Dah boleh balik sekarang. Jangan lupa punch out!',
+    icon: 'icon-192.png',
+    badge: 'icon-192.png',
+    tag: 'waktu-balik',          // replaces previous notif instead of stacking
+    renotify: true,
+    requireInteraction: true,    // stays on screen until dismissed
+    vibrate: [200, 100, 200, 100, 400],
+    actions: [
+      { action: 'open', title: '📲 Buka App' },
+      { action: 'dismiss', title: '✕ Tutup' }
+    ],
+    data: { url: './index.html' }
+  };
+
+  if(Notification.permission !== 'granted') return;
+
+  // Try via service worker first (works on phone + Windows when app is closed)
+  navigator.serviceWorker?.getRegistration().then(reg => {
+    if(reg){
+      reg.showNotification(title, options);
+    } else {
+      // Fallback: basic browser notification
+      new Notification(title, { body: options.body, icon: options.icon });
+    }
+  }).catch(() => {
+    new Notification(title, { body: options.body, icon: options.icon });
+  });
 }
 
 function setReminder(){
   Notification.requestPermission().then(perm => {
-    if(perm !== 'granted'){ alert('Sila benarkan notifikasi untuk set peringatan.'); return; }
+    if(perm !== 'granted'){
+      showToast('⚠️ Sila benarkan notifikasi dalam tetapan browser.');
+      return;
+    }
 
-    const btn=document.getElementById('reminderBtn');
-    btn.querySelector('span:last-child').textContent='';
-    btn.querySelector('.left').innerHTML='✅ <span>Peringatan Ditetapkan</span>';
-    btn.style.borderColor='var(--accent-border)';
-    btn.style.color='var(--accent)';
+    const btn = document.getElementById('reminderBtn');
+    btn.querySelector('span:last-child').textContent = '';
+    btn.querySelector('.left').innerHTML = '✅ <span>Peringatan Ditetapkan</span>';
+    btn.style.borderColor = 'var(--accent-border)';
+    btn.style.color = 'var(--accent)';
 
-    const now=new Date();
-    let target=new Date();
-    target.setHours(Math.floor(targetSecondsToday/3600)%24);
-    target.setMinutes(Math.floor((targetSecondsToday%3600)/60));
-    target.setSeconds(Math.floor(targetSecondsToday%60));
-    if(target<now) target.setDate(target.getDate()+1);
+    const now = new Date();
+    let target = new Date();
+    target.setHours(Math.floor(targetSecondsToday / 3600) % 24);
+    target.setMinutes(Math.floor((targetSecondsToday % 3600) / 60));
+    target.setSeconds(Math.floor(targetSecondsToday % 60));
+    if(target < now) target.setDate(target.getDate() + 1);
 
-    setTimeout(()=>{ notify(); }, target-now);
+    const msLeft = target - now;
+
+    // Send a "reminder set" confirmation notification immediately
+    navigator.serviceWorker?.getRegistration().then(reg => {
+      const pulangTime = document.getElementById('outTime').innerText;
+      const confirmOptions = {
+        body: `Peringatan ditetapkan untuk pukul ${pulangTime} ⏰`,
+        icon: 'icon-192.png',
+        badge: 'icon-192.png',
+        tag: 'waktu-balik-set',
+        silent: true,
+        data: { url: './index.html' }
+      };
+      if(reg) reg.showNotification('Waktu Balik — Peringatan Aktif', confirmOptions);
+      else new Notification('Waktu Balik — Peringatan Aktif', confirmOptions);
+    }).catch(() => {});
+
+    // Schedule the actual alarm
+    setTimeout(() => { notify(); }, msLeft);
+
+    // Also tell SW to schedule (so it fires even if tab is in background)
+    navigator.serviceWorker?.getRegistration().then(reg => {
+      if(reg && reg.active){
+        reg.active.postMessage({
+          type: 'SCHEDULE_NOTIFY',
+          delay: msLeft,
+          title: '🎉 Waktu Balik!',
+          body: 'Dah boleh balik sekarang. Jangan lupa punch out!'
+        });
+      }
+    });
   });
+}
+
+// Toast helper
+function showToast(msg){
+  let t = document.getElementById('toast');
+  if(!t){
+    t = document.createElement('div');
+    t.id = 'toast';
+    t.style.cssText = `
+      position:fixed; bottom:80px; left:50%; transform:translateX(-50%);
+      background:#1c2230; border:1px solid rgba(0,229,160,0.3);
+      color:#f0f4f8; padding:10px 18px; border-radius:20px;
+      font-size:13px; font-weight:500; z-index:9999;
+      box-shadow:0 4px 20px rgba(0,0,0,0.4);
+      transition: opacity 0.4s;
+    `;
+    document.body.appendChild(t);
+  }
+  t.innerText = msg;
+  t.style.opacity = '1';
+  clearTimeout(t._hide);
+  t._hide = setTimeout(() => { t.style.opacity = '0'; }, 3000);
 }
 
 updateDisplay();
