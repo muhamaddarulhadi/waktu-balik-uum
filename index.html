@@ -54,17 +54,25 @@
     gap: 0;
   }
 
-  /* Mobile: follow screen width */
-  @media (max-width: 400px) {
-    body { padding: 0 0 40px; }
-    .phone { width: 100%; }
-    .section { margin: 0 10px 10px; }
-    .cta-btn { margin: 0 10px 10px; width: calc(100% - 20px); }
-    .result-section { margin: 0 10px 10px; }
-    .khamis-banner { margin: 0 10px 12px; }
-    .footnote { margin: 0 14px; }
-    .install-banner { width: calc(100% - 24px); }
+  /* Applied via JS when mobile UA detected */
+  body.is-mobile {
+    padding: 0;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 20px);
+    display: block;
   }
+  body.is-mobile .phone {
+    width: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 20px);
+  }
+  body.is-mobile .section { margin: 0 10px 10px; }
+  body.is-mobile .cta-btn { margin: 0 10px 10px; width: calc(100% - 20px); }
+  body.is-mobile .result-section { margin: 0 10px 10px; }
+  body.is-mobile .khamis-banner { margin: 0 10px 12px; }
+  body.is-mobile .footnote { margin: 0 14px; }
+  body.is-mobile .install-banner { width: calc(100% - 24px); bottom: 12px; }
 
   /* TOP BAR */
   .topbar {
@@ -720,6 +728,11 @@
 <div class="offline-pill" id="offlinePill">📵 Tiada sambungan</div>
 
 <script>
+// Detect mobile via user-agent
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+  || (navigator.userAgentData && navigator.userAgentData.mobile);
+if(isMobile) document.body.classList.add('is-mobile');
+
 let hour=8, minute=0, second=0;
 let countdownInterval, targetSecondsToday=0, totalWorkSeconds=0;
 let holdTimer, holdInterval;
