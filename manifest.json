@@ -2,7 +2,7 @@
   "name": "Waktu Balik",
   "short_name": "Waktu Balik",
   "description": "Kira masa pulang kerja",
-  "start_url": "./WaktuBalikUUMV4.html",
+  "start_url": "./index.html",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#0d1117",
