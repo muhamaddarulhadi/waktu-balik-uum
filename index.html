@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<meta name="theme-color" content="#0d1117" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Waktu Balik" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icon-192.png" />
+<title>Waktu Balik</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface2: #1c2230;
+    --surface3: #212836;
+    --border: rgba(255,255,255,0.07);
+    --accent: #00e5a0;
+    --accent-dim: rgba(0,229,160,0.12);
+    --accent-border: rgba(0,229,160,0.3);
+    --orange: #f59e0b;
+    --orange-dim: rgba(245,158,11,0.15);
+    --orange-border: rgba(245,158,11,0.35);
+    --red: #ef4444;
+    --red-dim: rgba(239,68,68,0.12);
+    --muted: #6b7280;
+    --muted2: #4b5563;
+    --text: #f0f4f8;
+    --text2: #9ca3af;
+  }
+
+  body {
+    font-family: 'Space Grotesk', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 20px 0 40px;
+  }
+
+  .phone {
+    width: 360px;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  /* TOP BAR */
+  .topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px 12px;
+  }
+  .topbar h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+  .topbar .subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    margin-top: 1px;
+  }
+  .clock-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .clock-badge svg { width: 13px; height: 13px; }
+
+  /* KHAMIS BANNER */
+  .khamis-banner {
+    margin: 0 16px 12px;
+    background: var(--orange-dim);
+    border: 1px solid var(--orange-border);
+    border-radius: 14px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--orange);
+    display: none;
+  }
+  .khamis-banner.show { display: block; }
+
+  /* SECTION */
+  .section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    margin: 0 12px 10px;
+    overflow: hidden;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 34px; height: 34px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .section-icon.green { background: var(--accent-dim); }
+  .section-icon.orange { background: var(--orange-dim); }
+  .section-header-text h3 { font-size: 14px; font-weight: 600; }
+  .section-header-text p { font-size: 11px; color: var(--muted); margin-top: 1px; }
+
+  /* TIME PICKER */
+  .time-picker {
+    padding: 14px 16px 16px;
+  }
+  .time-labels {
+    display: flex;
+    justify-content: space-around;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    padding: 0 10px;
+  }
+  .stepper-row {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .stepper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .stepper button {
+    background: none;
+    border: none;
+    color: var(--accent);
+    font-size: 18px;
+    cursor: pointer;
+    width: 44px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px;
+    transition: background 0.15s;
+    user-select: none;
+  }
+  .stepper button:hover { background: var(--accent-dim); }
+  .stepper button:active { transform: scale(0.9); }
+  .time-val {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 34px;
+    font-weight: 700;
+    color: var(--text);
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    width: 82px; height: 66px;
+    display: flex; align-items: center; justify-content: center;
+    transition: border-color 0.2s;
+    cursor: text;
+    outline: none;
+    caret-color: var(--accent);
+  }
+  .time-val:hover { border-color: var(--accent-border); }
+  .time-val:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(0,229,160,0.15);
+    color: var(--accent);
+  }
+  .colon {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent-border);
+    margin-top: -4px;
+  }
+
+  /* PRESETS */
+  .presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    padding: 0 16px 16px;
+  }
+  .presets button {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px 14px;
+    color: var(--text2);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .presets button:hover {
+    background: var(--accent-dim);
+    border-color: var(--accent-border);
+    color: var(--accent);
+  }
+
+  /* WARNING */
+  .warning-box {
+    margin: 0 16px 12px;
+    background: var(--red-dim);
+    border: 1px solid rgba(239,68,68,0.3);
+    border-radius: 10px;
+    padding: 9px 12px;
+    font-size: 12px;
+    color: var(--red);
+    display: none;
+    align-items: center;
+    gap: 7px;
+  }
+  .warning-box.show { display: flex; }
+
+  /* ARRIVAL DISPLAY */
+  .arrival-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-top: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .arrival-row span { color: var(--muted); }
+  .arrival-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: var(--text);
+    font-size: 14px;
+  }
+
+  /* TOGGLES */
+  .toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .toggle-row:not(:last-child) { border-bottom: 1px solid var(--border); }
+  .toggle-row:hover { background: rgba(255,255,255,0.02); }
+  .toggle-info { flex: 1; }
+  .toggle-info h4 { font-size: 14px; font-weight: 600; }
+  .toggle-info p { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+  /* iOS-style toggle */
+  .switch { position: relative; width: 48px; height: 28px; flex-shrink: 0; }
+  .switch input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; inset: 0;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    transition: all 0.25s;
+    cursor: pointer;
+  }
+  .slider::before {
+    content: '';
+    position: absolute;
+    width: 22px; height: 22px;
+    left: 3px; top: 2px;
+    background: white;
+    border-radius: 50%;
+    transition: transform 0.25s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+  }
+  input:checked + .slider { background: var(--orange); border-color: var(--orange); }
+  input:checked + .slider::before { transform: translateX(20px); }
+
+  /* CTA BUTTON */
+  .cta-btn {
+    margin: 0 12px 10px;
+    background: var(--accent);
+    color: #0d1117;
+    border: none;
+    border-radius: 16px;
+    padding: 16px;
+    width: calc(100% - 24px);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s;
+    box-shadow: 0 4px 20px rgba(0,229,160,0.25);
+  }
+  .cta-btn:hover { background: #00ffb0; box-shadow: 0 6px 28px rgba(0,229,160,0.4); transform: translateY(-1px); }
+  .cta-btn:active { transform: translateY(0); }
+  .cta-btn .cta-left { display: flex; align-items: center; gap: 10px; }
+  .cta-btn .arrow { font-size: 18px; }
+
+  /* RESULT SECTION */
+  .result-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    margin: 0 12px 10px;
+    overflow: hidden;
+  }
+
+  .status-banner {
+    background: var(--orange-dim);
+    border-bottom: 1px solid var(--border);
+    padding: 11px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--orange);
+  }
+  .status-banner.done { background: var(--accent-dim); color: var(--accent); }
+
+  .pulang-label {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--muted);
+    text-transform: uppercase;
+    padding: 18px 0 6px;
+  }
+  .pulang-time {
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: -1px;
+    padding-bottom: 4px;
+  }
+
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    border-top: 1px solid var(--border);
+    margin-top: 14px;
+  }
+  .stat {
+    flex: 1;
+    text-align: center;
+    padding: 12px 0;
+    border-right: 1px solid var(--border);
+  }
+  .stat:last-child { border-right: none; }
+  .stat-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .stat-value {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .stat-value.accent { color: var(--accent); }
+
+  /* PROGRESS */
+  .progress-wrap {
+    padding: 14px 16px 6px;
+  }
+  .progress-top {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    font-weight: 500;
+  }
+  .progress-track {
+    height: 5px;
+    background: var(--surface3);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    border-radius: 3px;
+    transition: width 1s linear;
+  }
+
+  /* REMINDER BTN */
+  .reminder-btn {
+    margin: 14px 16px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 14px 16px;
+    width: calc(100% - 32px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    color: var(--text);
+    font-family: 'Space Grotesk', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.15s;
+  }
+  .reminder-btn:hover { border-color: var(--accent-border); background: var(--accent-dim); }
+  .reminder-btn .left { display: flex; align-items: center; gap: 10px; }
+  .reminder-btn .chevron { color: var(--muted); font-size: 16px; }
+
+  /* TAGS */
+  .tags {
+    display: flex;
+    gap: 8px;
+    padding: 0 16px 14px;
+    flex-wrap: wrap;
+  }
+  .tag {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 5px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text2);
+  }
+  .tag.orange { border-color: var(--orange-border); color: var(--orange); background: var(--orange-dim); }
+  .tag.red { border-color: rgba(239,68,68,0.3); color: var(--red); background: var(--red-dim); }
+
+  /* FOOTNOTE */
+  .footnote {
+    margin: 0 16px;
+    font-size: 11px;
+    color: var(--muted2);
+    line-height: 1.6;
+    padding: 10px 0;
+    border-top: 1px solid var(--border);
+  }
+
+  /* PWA Install Banner */
+  .install-banner {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 340px;
+    background: var(--surface);
+    border: 1px solid var(--accent-border);
+    border-radius: 18px;
+    padding: 14px 16px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    z-index: 999;
+    align-items: center;
+    gap: 12px;
+    animation: slideUp 0.3s ease;
+  }
+  .install-banner.show { display: flex; }
+  @keyframes slideUp { from { opacity:0; transform: translateX(-50%) translateY(20px); } to { opacity:1; transform: translateX(-50%) translateY(0); } }
+  .install-banner .install-icon { font-size: 28px; flex-shrink: 0; }
+  .install-banner .install-text { flex: 1; }
+  .install-banner .install-text strong { font-size: 14px; display: block; }
+  .install-banner .install-text span { font-size: 12px; color: var(--muted); }
+  .install-banner .install-actions { display: flex; gap: 8px; }
+  .install-banner .btn-install {
+    background: var(--accent); color: #0d1117;
+    border: none; border-radius: 10px;
+    padding: 8px 14px; font-size: 13px; font-weight: 700;
+    cursor: pointer; white-space: nowrap;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+  .install-banner .btn-dismiss {
+    background: none; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 8px 10px; font-size: 13px;
+    cursor: pointer;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  /* Offline indicator */
+  .offline-pill {
+    display: none;
+    position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+    background: var(--red); color: white;
+    padding: 6px 14px; border-radius: 20px;
+    font-size: 12px; font-weight: 600;
+    z-index: 1000;
+  }
+  .offline-pill.show { display: block; }
+</style>
+
+</head>
+<body>
+<div class="phone">
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div>
+      <h1>Waktu Balik UUM</h1>
+      <div class="subtitle">Kira masa pulang kerja</div>
+    </div>
+    <div class="clock-badge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <span id="liveClock">--:-- --</span>
+    </div>
+  </div>
+
+  <!-- KHAMIS BANNER -->
+  <div class="khamis-banner" id="khamisBanner">
+    📅 Hari ini Khamis — mod Khamis aktif
+  </div>
+
+  <!-- MASA TIBA SECTION -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon green">↪</div>
+      <div class="section-header-text">
+        <h3>Masa Tiba</h3>
+        <p>Tahan atas/bawah untuk tukar cepat</p>
+      </div>
+    </div>
+
+    <div class="time-picker">
+      <div class="time-labels">
+        <span style="width:82px;text-align:center">Jam</span>
+        <span style="width:14px"></span>
+        <span style="width:82px;text-align:center">Minit</span>
+        <span style="width:14px"></span>
+        <span style="width:82px;text-align:center">Saat</span>
+      </div>
+      <div class="stepper-row">
+        <div class="stepper">
+          <button onclick="changeTime('h',1)" onmousedown="startHold('h',1)" onmouseup="stopHold()" onmouseleave="stopHold()" ontouchstart="startHold('h',1)" ontouchend="stopHold()">▲</button>
+          <div id="hour" class="time-val" contenteditable="true" inputmode="numeric" onkeydown="handleKey(event,'h')" oninput="handleInput(event,'h')" onblur="commitInput('h')" onfocus="selectAll(this)">08</div>
+          <button onclick="changeTime('h',-1)" onmousedown="startHold('h',-1)" onmouseup="stopHold()" onmouseleave="stopHold()" ontouchstart="startHold('h',-1)" ontouchend="stopHold()">▼</button>
+        </div>
+        <div class="colon">:</div>
+        <div class="stepper">
+          <button onclick="changeTime('m',1)" onmousedown="startHold('m',1)" onmouseup="stopHold()" onmouseleave="stopHold()" ontouchstart="startHold('m',1)" ontouchend="stopHold()">▲</button>
+          <div id="minute" class="time-val" contenteditable="true" inputmode="numeric" onkeydown="handleKey(event,'m')" oninput="handleInput(event,'m')" onblur="commitInput('m')" onfocus="selectAll(this)">00</div>
+          <button onclick="changeTime('m',-1)" onmousedown="startHold('m',-1)" onmouseup="stopHold()" onmouseleave="stopHold()" ontouchstart="startHold('m',-1)" ontouchend="stopHold()">▼</button>
+        </div>
+        <div class="colon">:</div>
+        <div class="stepper">
+          <button onclick="changeTime('s',1)" onmousedown="startHold('s',1)" onmouseup="stopHold()" onmouseleave="stopHold()" ontouchstart="startHold('s',1)" ontouchend="stopHold()">▲</button>
+          <div id="second" class="time-val" contenteditable="true" inputmode="numeric" onkeydown="handleKey(event,'s')" oninput="handleInput(event,'s')" onblur="commitInput('s')" onfocus="selectAll(this)">00</div>
+          <button onclick="changeTime('s',-1)" onmousedown="startHold('s',-1)" onmouseup="stopHold()" onmouseleave="stopHold()" ontouchstart="startHold('s',-1)" ontouchend="stopHold()">▼</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="presets">
+      <button onclick="preset(7,30)">7:30</button>
+      <button onclick="preset(7,45)">7:45</button>
+      <button onclick="preset(8,0)">8:00</button>
+      <button onclick="preset(8,15)">8:15</button>
+      <button onclick="preset(8,30)">8:30</button>
+    </div>
+
+    <div class="warning-box" id="warningBox">
+      ⚠ <span id="warningText"></span>
+    </div>
+
+    <div class="arrival-row">
+      <span>Masa tiba:</span>
+      <span class="arrival-time" id="arrivalDisplay">08:00:00 AM</span>
+    </div>
+  </div>
+
+  <!-- TOGGLES -->
+  <div class="section">
+    <!-- KHAMIS TOGGLE -->
+    <div class="toggle-row" onclick="toggleCheck('thursday')">
+      <div class="section-icon orange">📅</div>
+      <div class="toggle-info">
+        <h4>Hari Khamis</h4>
+        <p id="thursdayDesc">Pulang 3:00 – 4:00 PM</p>
+      </div>
+      <label class="switch" onclick="event.stopPropagation()">
+        <input type="checkbox" id="thursday" onchange="calculate()">
+        <span class="slider"></span>
+      </label>
+    </div>
+    <!-- RAMADAN TOGGLE -->
+    <div class="toggle-row" onclick="toggleCheck('ramadan')">
+      <div class="section-icon" style="background:rgba(99,102,241,0.15); font-size:16px;">🌙</div>
+      <div class="toggle-info">
+        <h4>Bulan Ramadan</h4>
+        <p>Pulang 30 minit lebih awal</p>
+      </div>
+      <label class="switch" onclick="event.stopPropagation()">
+        <input type="checkbox" id="ramadan" onchange="calculate()">
+        <span class="slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <!-- CTA BUTTON -->
+  <button class="cta-btn" onclick="calculate()">
+    <div class="cta-left">
+      <span>📋</span>
+      <span>Kira Waktu Pulang</span>
+    </div>
+    <span class="arrow">→</span>
+  </button>
+
+  <!-- RESULT SECTION -->
+  <div class="result-section" id="resultSection" style="display:none">
+
+    <div class="status-banner" id="statusBanner">
+      ⏳ <span id="statusText">Masih waktu bekerja</span>
+    </div>
+
+    <div class="pulang-label">BOLEH PULANG PUKUL</div>
+    <div class="pulang-time" id="outTime">--:--:-- --</div>
+
+    <div class="stats-row">
+      <div class="stat">
+        <div class="stat-label">Tiba</div>
+        <div class="stat-value" id="statTiba">--:--</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Tempoh kerja</div>
+        <div class="stat-value" id="statTempoh">--</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Lagi</div>
+        <div class="stat-value accent" id="statLagi">--:--:--</div>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-top">
+        <span>Kemajuan kerja</span>
+        <span id="progressPct">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+
+    <button class="reminder-btn" onclick="setReminder()" id="reminderBtn">
+      <div class="left">🔔 <span>Tetapkan Peringatan Pulang</span></div>
+      <span class="chevron">›</span>
+    </button>
+
+    <div class="tags" id="tagsRow">
+      <!-- filled dynamically -->
+    </div>
+
+  </div>
+
+  <!-- FOOTNOTE -->
+  <div class="footnote">
+    ℹ Had tiba: 7:30 AM – 8:30 AM • Kiraan tepat sehingga saat •
+    Tahan anak panah untuk tukar cepat
+  </div>
+
+</div>
+
+<!-- PWA Install Banner -->
+<div class="install-banner" id="installBanner">
+  <div class="install-icon">📲</div>
+  <div class="install-text">
+    <strong>Pasang Waktu Balik</strong>
+    <span>Tambah ke skrin utama untuk guna offline</span>
+  </div>
+  <div class="install-actions">
+    <button class="btn-install" onclick="installPWA()">Pasang</button>
+    <button class="btn-dismiss" onclick="dismissInstall()">✕</button>
+  </div>
+</div>
+
+<!-- Offline indicator -->
+<div class="offline-pill" id="offlinePill">📵 Tiada sambungan</div>
+
+<script>
+let hour=8, minute=0, second=0;
+let countdownInterval, targetSecondsToday=0, totalWorkSeconds=0;
+let holdTimer, holdInterval;
+let calculated = false;
+
+const MAX_ARRIVAL_H = 8, MAX_ARRIVAL_M = 30; // 8:30 AM cap
+
+// Auto-detect Thursday
+if(new Date().getDay()===4){
+  document.getElementById('thursday').checked=true;
+}
+
+// Live clock
+function updateClock(){
+  const now=new Date();
+  let h=now.getHours(), m=now.getMinutes(), ampm=h>=12?'PM':'AM';
+  let dh=h%12||12;
+  document.getElementById('liveClock').innerText=`${dh}:${m.toString().padStart(2,'0')} ${ampm}`;
+}
+updateClock(); setInterval(updateClock,1000);
+
+// Khamis banner
+function updateBanner(){
+  const isThu=new Date().getDay()===4;
+  document.getElementById('khamisBanner').classList.toggle('show', isThu);
+}
+updateBanner();
+
+function toggleCheck(id){
+  const el=document.getElementById(id);
+  el.checked=!el.checked;
+  calculate();
+}
+
+function fmtTime(h,m,s=''){
+  const ampm=h>=12?'PM':'AM';
+  const dh=h%12||12;
+  if(s!=='') return `${dh}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')} ${ampm}`;
+  return `${dh}:${m.toString().padStart(2,'0')} ${ampm}`;
+}
+
+function selectAll(el){
+  const range=document.createRange();
+  range.selectNodeContents(el);
+  const sel=window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
+function handleKey(e, type){
+  // Allow: digits, backspace, delete, arrows, tab, enter
+  if(e.key==='Enter'){ e.preventDefault(); e.target.blur(); return; }
+  if(e.key==='ArrowUp'){ e.preventDefault(); changeTime(type,1); return; }
+  if(e.key==='ArrowDown'){ e.preventDefault(); changeTime(type,-1); return; }
+  if(e.key==='Tab'){ commitInput(type); return; }
+  if(!/^\d$/.test(e.key) && !['Backspace','Delete','ArrowLeft','ArrowRight'].includes(e.key)){
+    e.preventDefault();
+  }
+}
+
+function handleInput(e, type){
+  const el=e.target;
+  // Strip non-digits
+  const raw=el.innerText.replace(/\D/g,'').slice(0,2);
+  const max=type==='h'?23:59;
+  const val=Math.min(parseInt(raw)||0, max);
+  if(type==='h') hour=val;
+  if(type==='m') minute=val;
+  if(type==='s') second=val;
+  // Update display without touching focused element
+  updateDisplayExcept(type);
+}
+
+function commitInput(type){
+  const el=document.getElementById(type==='h'?'hour':type==='m'?'minute':'second');
+  const val=type==='h'?hour:type==='m'?minute:second;
+  el.innerText=val.toString().padStart(2,'0');
+  updateDisplay();
+}
+
+function updateDisplayExcept(skip){
+  if(skip!=='h') document.getElementById('hour').innerText=hour.toString().padStart(2,'0');
+  if(skip!=='m') document.getElementById('minute').innerText=minute.toString().padStart(2,'0');
+  if(skip!=='s') document.getElementById('second').innerText=second.toString().padStart(2,'0');
+
+  document.getElementById('arrivalDisplay').innerText=fmtTime(hour,minute,second);
+  const arrivalSec=hour*3600+minute*60+second;
+  const capSec=MAX_ARRIVAL_H*3600+MAX_ARRIVAL_M*60;
+  const wBox=document.getElementById('warningBox');
+  const wText=document.getElementById('warningText');
+  if(arrivalSec>capSec){ wText.innerText='Melebihi had 8:30 AM — kiraan guna 8:30 AM'; wBox.classList.add('show'); }
+  else { wBox.classList.remove('show'); }
+  if(calculated) calculate();
+}
+
+function updateDisplay(){
+  const focused=document.activeElement;
+  if(focused!==document.getElementById('hour')) document.getElementById('hour').innerText=hour.toString().padStart(2,'0');
+  if(focused!==document.getElementById('minute')) document.getElementById('minute').innerText=minute.toString().padStart(2,'0');
+  if(focused!==document.getElementById('second')) document.getElementById('second').innerText=second.toString().padStart(2,'0');
+
+  document.getElementById('arrivalDisplay').innerText=fmtTime(hour,minute,second);
+
+  const arrivalSec=hour*3600+minute*60+second;
+  const capSec=MAX_ARRIVAL_H*3600+MAX_ARRIVAL_M*60;
+  const wBox=document.getElementById('warningBox');
+  const wText=document.getElementById('warningText');
+  if(arrivalSec>capSec){ wText.innerText='Melebihi had 8:30 AM — kiraan guna 8:30 AM'; wBox.classList.add('show'); }
+  else { wBox.classList.remove('show'); }
+
+  if(calculated) calculate();
+}
+
+function changeTime(type,amount){
+  if(type==='h') hour=(hour+amount+24)%24;
+  if(type==='m') minute=(minute+amount+60)%60;
+  if(type==='s') second=(second+amount+60)%60;
+  updateDisplay();
+}
+
+function startHold(type,amount){
+  stopHold();
+  holdTimer=setTimeout(()=>{
+    holdInterval=setInterval(()=>changeTime(type,amount),80);
+  },400);
+}
+function stopHold(){ clearTimeout(holdTimer); clearInterval(holdInterval); }
+
+function preset(h,m){ hour=h; minute=m; second=0; updateDisplay(); }
+
+function calculate(){
+  calculated=true;
+  document.getElementById('resultSection').style.display='block';
+  // Reset reminder button
+  const btn=document.getElementById('reminderBtn');
+  btn.querySelector('span:last-child').textContent='›';
+  btn.querySelector('.left').innerHTML='🔔 <span>Tetapkan Peringatan Pulang</span>';
+  btn.style.borderColor=''; btn.style.color='';
+  const isRamadan=document.getElementById('ramadan').checked;
+  const isThursday=document.getElementById('thursday').checked;
+
+  let workHours = isRamadan?(isThursday?7:8.5):(isThursday?7.5:9);
+  totalWorkSeconds = workHours*3600;
+
+  // Cap arrival at 8:30 AM
+  const arrivalSec = Math.min(hour*3600+minute*60+second, MAX_ARRIVAL_H*3600+MAX_ARRIVAL_M*60);
+  targetSecondsToday = arrivalSec + totalWorkSeconds;
+
+  // Display pulang time
+  const tH=Math.floor(targetSecondsToday/3600)%24;
+  const tM=Math.floor((targetSecondsToday%3600)/60);
+  const tS=Math.floor(targetSecondsToday%60);
+  document.getElementById('outTime').innerText=fmtTime(tH,tM,tS);
+
+  // Stat: Tiba
+  const effH=Math.floor(arrivalSec/3600), effM=Math.floor((arrivalSec%3600)/60), effS=Math.floor(arrivalSec%60);
+  document.getElementById('statTiba').innerText=fmtTime(effH,effM,effS);
+
+  // Stat: Tempoh kerja
+  const wh=Math.floor(workHours), wm=Math.round((workHours-wh)*60);
+  document.getElementById('statTempoh').innerText=`${wh}j${wm?` ${wm}m`:''}`;
+
+  // Tags
+  const tagsRow=document.getElementById('tagsRow');
+  tagsRow.innerHTML='';
+  if(isThursday){
+    const t=document.createElement('div');
+    t.className='tag orange'; t.textContent='📅 Khamis';
+    tagsRow.appendChild(t);
+  }
+  const arrivalSec2 = hour*3600+minute*60+second;
+  const capSec = MAX_ARRIVAL_H*3600+MAX_ARRIVAL_M*60;
+  if(arrivalSec2 > capSec){
+    const t=document.createElement('div');
+    t.className='tag red'; t.textContent='⚠ Had 8:30 AM';
+    tagsRow.appendChild(t);
+  }
+
+  if(countdownInterval) clearInterval(countdownInterval);
+  countdownInterval=setInterval(updateCountdown,1000);
+  updateCountdown();
+
+}
+
+function updateCountdown(){
+  const now=new Date();
+  const current=now.getHours()*3600+now.getMinutes()*60+now.getSeconds();
+  let diff=targetSecondsToday-current;
+  const banner=document.getElementById('statusBanner');
+  const statusText=document.getElementById('statusText');
+
+  if(diff<=0){
+    document.getElementById('statLagi').innerText='00:00:00';
+    document.getElementById('progressFill').style.width='100%';
+    document.getElementById('progressPct').innerText='100%';
+    banner.className='status-banner done';
+    statusText.innerText='BALIK WOI 🎉';
+    clearInterval(countdownInterval);
+    notify();
+    return;
+  }
+
+  let h=Math.floor(diff/3600), m=Math.floor((diff%3600)/60), s=diff%60;
+  document.getElementById('statLagi').innerText=`${h.toString().padStart(2,'0')}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+
+  const elapsed=totalWorkSeconds-diff;
+  let pct=Math.max(0,Math.min(100,Math.round((elapsed/totalWorkSeconds)*100)));
+  document.getElementById('progressFill').style.width=pct+'%';
+  document.getElementById('progressPct').innerText=pct+'%';
+
+  banner.className='status-banner';
+  statusText.innerText='Masih waktu bekerja';
+}
+
+function notify(){
+  if(Notification.permission==='granted'){
+    navigator.serviceWorker?.getRegistration().then(reg=>{
+      if(reg) reg.showNotification('Waktu Balik!',{body:'Dah boleh balik 🎉',icon:'icon-192.png'});
+      else new Notification('Waktu Balik!',{body:'Dah boleh balik 🎉'});
+    }).catch(()=>new Notification('Waktu Balik!',{body:'Dah boleh balik 🎉'}));
+  }
+}
+
+function setReminder(){
+  Notification.requestPermission().then(perm => {
+    if(perm !== 'granted'){ alert('Sila benarkan notifikasi untuk set peringatan.'); return; }
+
+    const btn=document.getElementById('reminderBtn');
+    btn.querySelector('span:last-child').textContent='';
+    btn.querySelector('.left').innerHTML='✅ <span>Peringatan Ditetapkan</span>';
+    btn.style.borderColor='var(--accent-border)';
+    btn.style.color='var(--accent)';
+
+    const now=new Date();
+    let target=new Date();
+    target.setHours(Math.floor(targetSecondsToday/3600)%24);
+    target.setMinutes(Math.floor((targetSecondsToday%3600)/60));
+    target.setSeconds(Math.floor(targetSecondsToday%60));
+    if(target<now) target.setDate(target.getDate()+1);
+
+    setTimeout(()=>{ notify(); }, target-now);
+  });
+}
+
+updateDisplay();
+
+// ── PWA ──────────────────────────────────────────
+let deferredPrompt = null;
+
+// Register service worker
+if('serviceWorker' in navigator){
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(reg => console.log('SW registered:', reg.scope))
+      .catch(err => console.log('SW failed:', err));
+  });
+}
+
+// Capture install prompt
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  document.getElementById('installBanner').classList.add('show');
+});
+
+// Hide banner after installed
+window.addEventListener('appinstalled', () => {
+  document.getElementById('installBanner').classList.remove('show');
+  deferredPrompt = null;
+});
+
+function installPWA(){
+  if(!deferredPrompt) return;
+  deferredPrompt.prompt();
+  deferredPrompt.userChoice.then(() => {
+    document.getElementById('installBanner').classList.remove('show');
+    deferredPrompt = null;
+  });
+}
+
+function dismissInstall(){
+  document.getElementById('installBanner').classList.remove('show');
+}
+
+// Offline / online detection
+function updateOnlineStatus(){
+  document.getElementById('offlinePill').classList.toggle('show', !navigator.onLine);
+}
+window.addEventListener('online', updateOnlineStatus);
+window.addEventListener('offline', updateOnlineStatus);
+updateOnlineStatus();
+</script>
+</body>
+</html>
