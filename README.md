@@ -18,8 +18,9 @@
 - 📅 **Auto detect hari Khamis** — mod Khamis aktif secara automatik setiap hari Khamis
 - 🌙 **Mod Ramadan** — toggle untuk kurangkan 30 minit waktu bekerja
 - ⌨️ **Input fleksibel** — boleh taip terus atau guna butang atas/bawah (tahan untuk tukar cepat)
-- ⏰ **Peringatan notifikasi** — set reminder, dapat notifikasi bila dah tiba masa balik
+- 🔔 **Toggle peringatan notifikasi** — klik sekali untuk aktif, klik lagi untuk matikan
 - 📊 **Progress bar** — tunjuk kemajuan waktu bekerja dalam masa nyata
+- 💾 **Auto simpan sesi** — data dikembalikan semula bila refresh atau buka balik app (sama hari sahaja)
 - 📵 **Indicator offline** — tunjuk status sambungan internet
 - 📲 **Boleh install** — tambah ke skrin utama seperti app biasa
 
@@ -41,10 +42,30 @@
 ## Cara Guna
 
 1. Buka app di [muhamaddarulhadi.github.io/waktu-balik-uum](https://muhamaddarulhadi.github.io/waktu-balik-uum/)
-2. Masukkan masa tiba (taip atau guna butang ▲▼)
+2. Masukkan masa tiba (taip terus dalam kotak atau guna butang ▲▼)
 3. Aktifkan toggle **Khamis** atau **Ramadan** jika berkenaan
 4. Klik **Kira Waktu Pulang**
-5. *(Pilihan)* Klik **Tetapkan Peringatan Pulang** untuk dapat notifikasi
+5. *(Pilihan)* Klik **Tetapkan Peringatan Pulang** untuk aktifkan notifikasi — klik semula untuk matikan
+
+### Auto Simpan Sesi
+- Selepas klik **Kira Waktu Pulang**, data (masa tiba, togol, keputusan) disimpan secara automatik
+- Bila refresh atau buka semula app pada **hari yang sama**, data terus dipulihkan tanpa perlu kira semula
+- Data akan **luput secara automatik** pada keesokan harinya
+
+---
+
+## Peringatan Notifikasi
+
+Klik butang **Tetapkan Peringatan Pulang** untuk toggle notifikasi:
+
+| Keadaan | Paparan Butang |
+|---------|---------------|
+| Belum aktif | 🔔 Tetapkan Peringatan Pulang |
+| Aktif | 🔔 Notifikasi Aktif ✅ |
+
+- Klik **sekali** → aktifkan, notifikasi akan berbunyi tepat pada masa boleh balik
+- Klik **lagi** → matikan peringatan
+- Klik **Kira Waktu Pulang** → reset semua, termasuk peringatan
 
 ---
 
@@ -64,15 +85,13 @@
 
 ---
 
-## Notifikasi
-
-App menyokong notifikasi sistem pada semua platform:
+## Notifikasi — Sokongan Platform
 
 | Platform | Status |
 |----------|--------|
-| Android | ✅ Native notification + vibrate |
-| iOS (Safari PWA) | ✅ Perlu install dulu |
-| Windows (Chrome/Edge) | ✅ Windows notification center |
+| Android Chrome/Brave | ✅ Native + vibrate |
+| iOS Safari (PWA) | ✅ Perlu install dulu sebagai PWA |
+| Windows Chrome/Edge | ✅ Windows notification center |
 | macOS | ✅ macOS notification center |
 
 > Untuk desktop — pastikan notifikasi dibenarkan: klik ikon 🔒 di address bar → **Notifications → Allow**
@@ -83,11 +102,13 @@ App menyokong notifikasi sistem pada semua platform:
 
 ```
 waktu-balik-uum/
-├── index.html       # App utama
+├── index.html       # Struktur HTML + CSS
+├── app.js           # Logik JavaScript app
 ├── manifest.json    # PWA manifest
 ├── sw.js            # Service worker (offline + notifikasi)
 ├── icon-192.png     # Icon app (192×192)
-└── icon-512.png     # Icon app (512×512)
+├── icon-512.png     # Icon app (512×512)
+└── README.md        # Dokumentasi ini
 ```
 
 ---
@@ -98,6 +119,7 @@ waktu-balik-uum/
 - Progressive Web App (PWA)
 - Web Notifications API
 - Service Worker API
+- localStorage (sesi harian)
 - Google Fonts — Space Grotesk + JetBrains Mono
 
 ---
@@ -106,4 +128,3 @@ waktu-balik-uum/
 
 **Muhamad Darul Hadi**
 GitHub: [@muhamaddarulhadi](https://github.com/muhamaddarulhadi)
-
