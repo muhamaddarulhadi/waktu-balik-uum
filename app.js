@@ -62,12 +62,12 @@ function updateNotifToggleUI() {
   if (!btn) return;
   if (notifEnabled) {
     btn.querySelector('.left').innerHTML = '🔔 <span>Notifikasi Aktif</span>';
-    btn.querySelector('span:last-child').textContent = '✅';
+    btn.querySelector('.chevron').textContent = '✅';
     btn.style.borderColor = 'var(--accent-border)';
     btn.style.color = 'var(--accent)';
   } else {
     btn.querySelector('.left').innerHTML = '🔔 <span>Tetapkan Peringatan Pulang</span>';
-    btn.querySelector('span:last-child').textContent = '›';
+    btn.querySelector('.chevron').textContent = '›';
     btn.style.borderColor = '';
     btn.style.color = '';
   }
