@@ -483,7 +483,7 @@ updateOnlineStatus();
         updateNotifToggleUI();
       }
     }
-    showToast('📂 Data semalam dipulihkan');
+    showToast('📂 Data hari ini dipulihkan');
   } else {
     updateDisplay();
   }
